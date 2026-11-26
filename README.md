@@ -34,7 +34,7 @@ LeNet、AlexNet、AlexNet＋LRN、VGG16、VGG16＋BN、GoogLeNet、Inception v2�
 
 詳見 [實驗方法與目前限制](docs/experiment-method.md) · [本機網站說明](webs/README.md)。介面提供訓練設定、曲線、分類表現與實驗比較；目前沒有公開部署網站。
 
-<img src="docs/images/cnn-lab-classification.jpg" alt="CNN Lab 訓練設定、混淆矩陣與六類分類指標" width="520">
+<img src="docs/images/cnn-lab-classification.jpg" alt="CNN Lab 訓練設定、混淆矩陣與六類分類指標" width="1000">
 
 *實際介面截圖，呈現個別驗證結果，並非最終測試成績或模型排名。*
 
