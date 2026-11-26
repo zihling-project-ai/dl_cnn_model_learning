@@ -25,4 +25,3 @@
 - AlexNet 原論文已含 LRN；無 LRN 是本專案對照版本。
 - VGG16＋BN 不是原 VGG 論文配置；該卡使用原 VGG16 參考圖，另列加入 BN 等差異。
 - Inception v2 固定採 TF-Slim 官方 `inception_v2.py` 參考，不混稱所有同名 BN-Inception 或 v3 架構。
-- [架構圖核對與來源](architecture-review.md)。
