@@ -1,0 +1,47 @@
+{
+  "seed": 42,
+  "ratios": {
+    "train": 0.8,
+    "val": 0.1,
+    "test": 0.1
+  },
+  "original_readable_images": 26128,
+  "unique_images": 24531,
+  "removed_duplicate_copies": 1597,
+  "source_status_counts": {
+    "image": 26128,
+    "unsupported_extension": 5
+  },
+  "counts": {
+    "train": {
+      "cat": 4539,
+      "dog": 4207,
+      "fox": 3234,
+      "leopard": 2560,
+      "lion": 2819,
+      "wolf": 2267
+    },
+    "val": {
+      "cat": 567,
+      "dog": 526,
+      "fox": 404,
+      "leopard": 320,
+      "lion": 352,
+      "wolf": 284
+    },
+    "test": {
+      "cat": 567,
+      "dog": 526,
+      "fox": 404,
+      "leopard": 320,
+      "lion": 352,
+      "wolf": 283
+    }
+  },
+  "source_hashes_unchanged": true,
+  "copy_hashes_verified": true,
+  "cross_split_file_duplicates": 0,
+  "cross_split_decoded_pixel_duplicates": 0,
+  "cross_split_known_family_overlap": 0,
+  "limitations": "未進行視覺近似圖或拍攝個體辨識；無法保證未知裁切、重編碼或無可辨認檔名的同源圖片皆被識別。"
+}
