@@ -438,6 +438,16 @@ def create_server(lab, port=8765):
                 if parsed.path == '/api/image':
                     return self.send(lab.image(args['run'][0], int(args['index'][0])), 'image/jpeg')
                 files = {'/': ('index.html', 'text/html; charset=utf-8'), '/app.js': ('app.js', 'text/javascript; charset=utf-8'), '/style.css': ('style.css', 'text/css; charset=utf-8')}
+                # 只提供固定模型圖清單，避免任意路徑存取。
+                model_images = {
+                    '/model-images/' + name: lab.root / 'docs/images' / name
+                    for name in ['lenet-reference.svg', 'alexnet-reference.svg', 'alexnet_lrn-reference.svg',
+                                 'vgg16-reference.svg', 'vgg16_bn-reference.svg', 'googlenet-reference.svg',
+                                 'inception-reference.svg', 'resnet50-reference.svg', 'mobilenet_v1-reference.svg',
+                                 'efficientnet_b0-reference.svg']
+                }
+                if parsed.path in model_images:
+                    return self.send(model_images[parsed.path].read_bytes(), 'image/svg+xml')
                 if parsed.path not in files:
                     return self.send({'error': '找不到頁面'}, status=404)
                 filename, kind = files[parsed.path]

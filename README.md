@@ -25,8 +25,9 @@
 
 LeNet、AlexNet、AlexNet＋LRN、VGG16、VGG16＋BN、GoogLeNet、Inception v2、ResNet50、MobileNet v1、EfficientNet-B0。
 
-- [模型介紹 HTML 與架構圖](docs/models.html)：下載專案後用瀏覽器開啟；GitHub 檔案頁會顯示原始碼。
-- [模型特色與論文架構差異](docs/model-differences.md)：各實作保留與調整的部分。
+- CNN Lab 的「模型介紹」頁籤整合架構圖與論文差異，沿用相同介面風格；啟動方式見 [網站說明](webs/README.md)。
+- [模型介紹離線 HTML](docs/models.html)：下載專案後可直接用瀏覽器閱讀；GitHub 檔案頁會顯示原始碼。
+- [模型特色與論文架構差異](docs/model-differences.md)：各實作保留與調整的部分；[架構圖核對與來源](docs/architecture-review.md)。
 
 ## 四、實驗方法
 

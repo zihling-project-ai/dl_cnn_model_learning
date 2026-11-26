@@ -39,9 +39,9 @@
   function selectTab(tab) {
     const buttons = [...root.querySelectorAll('[role=tab]')];
     buttons.forEach(button => { button.setAttribute('aria-selected', String(button === tab)); $(button.getAttribute('aria-controls')).hidden = button !== tab; });
-    $('cl-original-stats').hidden = tab.id === 'cl-tab-class';
-    root.querySelector('.lab-result-head .lab-eyebrow').textContent = '本機實測紀錄 · 驗證集結果';
-    root.querySelector('.lab-result-head h2').textContent = tab.id === 'cl-tab-class' ? '看懂每一類的判斷' : '看見模型如何學習';
+    $('cl-original-stats').hidden = ['cl-tab-class','cl-tab-models'].includes(tab.id);
+    root.querySelector('.lab-result-head .lab-eyebrow').textContent = tab.id === 'cl-tab-models' ? '模型原理 · 架構與論文差異' : '本機實測紀錄 · 驗證集結果';
+    root.querySelector('.lab-result-head h2').textContent = tab.id === 'cl-tab-models' ? '理解每個模型的設計' : tab.id === 'cl-tab-class' ? '看懂每一類的判斷' : '看見模型如何學習';
     requestAnimationFrame(drawChart);
   }
   function refreshRunPicker() {
@@ -208,6 +208,6 @@
   $('cl-error-images').addEventListener('click',async()=>{try{const [truth,pred]=chosenCell;const rows=await api(`/api/errors?run=${encodeURIComponent(runId)}&true=${truth}&pred=${pred}`);const grid=$('cl-errors');grid.replaceChildren();grid.hidden=false;rows.forEach(row=>{const figure=document.createElement('figure'),image=document.createElement('img'),caption=document.createElement('figcaption');image.src=`/api/image?run=${encodeURIComponent(runId)}&index=${row.index}`;image.alt=`真實與預測不一致的驗證照片：${row.filename}`;image.loading='lazy';caption.textContent=`${row.filename} · 預測分數 ${percent(row.confidence)}`;figure.append(image,caption);grid.append(figure);});$('cl-image-note').textContent=`顯示此格前 ${rows.length} 張；預測分數不是校準後的正確機率。`;grid.scrollIntoView({block:'nearest',behavior:'smooth'});}catch(error){alert(error.message);}});
   // 比較表可同時容納不同模型與新增的分類指標。
   const header=$('cl-panel-compare').querySelector('thead tr');header.replaceChildren();['模型','輪數','Batch','LR','Optimizer','驗證 Acc.','驗證 Loss','Macro F1','耗時','執行環境','狀態'].forEach(text=>{const th=document.createElement('th');th.textContent=text;header.append(th);});
-  selectTab($('cl-tab-curves'));draft();poll();setInterval(poll,3000);
+  selectTab($(location.hash === '#models' ? 'cl-tab-models' : 'cl-tab-curves'));draft();poll();setInterval(poll,3000);
   if(globalThis.ResizeObserver)new ResizeObserver(()=>requestAnimationFrame(drawChart)).observe(root.querySelector('[data-viz-container]'));
 })();

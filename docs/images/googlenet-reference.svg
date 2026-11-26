@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="1083" viewBox="0 0 1120 1083" role="img" aria-labelledby="title desc">
+<title id="title">GoogLeNet · Inception v1 參考架構</title>
+<desc id="desc">依論文或官方參考重繪的階段概覽；右側列本專案差異。非完整逐算子計算圖。</desc>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#0071e3"/></marker></defs>
+<rect width="1120" height="1083" rx="24" fill="#f5f5f7"/>
+<g font-family="-apple-system,BlinkMacSystemFont,PingFang TC,Microsoft JhengHei,sans-serif" fill="#1d1d1f">
+<text x="36" y="52" font-size="29" font-weight="600">GoogLeNet · Inception v1</text>
+<text x="36" y="86" font-size="16" fill="#68686f">Szegedy et al. · Table 1 / Figures 2–3</text>
+<text x="36" y="117" font-size="16" fill="#68686f">參考架構階段概覽 · 左側依來源重繪；右側為本專案調整</text>
+<rect x="36" y="150" width="670" height="78" rx="16" fill="#edf5ff" stroke="#d7dce2"/>
+<text x="371" y="181" text-anchor="middle" font-size="21" font-weight="500">輸入 → Conv 7×7 / 64 · s2</text>
+<text x="371" y="208" text-anchor="middle" font-size="16" fill="#68686f">MaxPool 3×3 / s2 → LRN</text>
+<path d="M371 228 V247" stroke="#0071e3" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="36" y="251" width="670" height="78" rx="16" fill="#fff" stroke="#d7dce2"/>
+<text x="371" y="282" text-anchor="middle" font-size="21" font-weight="500">Conv 1×1 / 64 → Conv 3×3 / 192</text>
+<text x="371" y="309" text-anchor="middle" font-size="16" fill="#68686f">LRN → MaxPool 3×3 / s2</text>
+<path d="M371 329 V348" stroke="#0071e3" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="36" y="352" width="670" height="78" rx="16" fill="#fff" stroke="#d7dce2"/>
+<text x="371" y="383" text-anchor="middle" font-size="21" font-weight="500">Inception 3a → 3b</text>
+<text x="371" y="410" text-anchor="middle" font-size="16" fill="#68686f">輸出通道 256 → 480 → MaxPool</text>
+<path d="M371 430 V449" stroke="#0071e3" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="36" y="453" width="670" height="78" rx="16" fill="#fff" stroke="#d7dce2"/>
+<text x="371" y="484" text-anchor="middle" font-size="21" font-weight="500">Inception 4a</text>
+<text x="371" y="511" text-anchor="middle" font-size="16" fill="#68686f">512 channels；支出 Aux1（訓練用）</text>
+<path d="M371 531 V550" stroke="#0071e3" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="36" y="554" width="670" height="78" rx="16" fill="#fff" stroke="#d7dce2"/>
+<text x="371" y="585" text-anchor="middle" font-size="21" font-weight="500">Inception 4b → 4c → 4d</text>
+<text x="371" y="612" text-anchor="middle" font-size="16" fill="#68686f">512 → 512 → 528；4d 支出 Aux2</text>
+<path d="M371 632 V651" stroke="#0071e3" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="36" y="655" width="670" height="78" rx="16" fill="#fff" stroke="#d7dce2"/>
+<text x="371" y="686" text-anchor="middle" font-size="21" font-weight="500">Inception 4e → MaxPool</text>
+<text x="371" y="713" text-anchor="middle" font-size="16" fill="#68686f">832 channels；降至 7×7</text>
+<path d="M371 733 V752" stroke="#0071e3" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="36" y="756" width="670" height="78" rx="16" fill="#fff" stroke="#d7dce2"/>
+<text x="371" y="787" text-anchor="middle" font-size="21" font-weight="500">Inception 5a → 5b</text>
+<text x="371" y="814" text-anchor="middle" font-size="16" fill="#68686f">832 → 1024 channels</text>
+<path d="M371 834 V853" stroke="#0071e3" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="36" y="857" width="670" height="78" rx="16" fill="#edf5ff" stroke="#d7dce2"/>
+<text x="371" y="888" text-anchor="middle" font-size="21" font-weight="500">AvgPool 7×7 → Dropout 0.4</text>
+<text x="371" y="915" text-anchor="middle" font-size="16" fill="#68686f">Linear 1000 → Softmax</text>
+<rect x="732" y="150" width="352" height="368" rx="18" fill="#fff" stroke="#d7dce2"/>
+<text x="754" y="189" font-size="22" font-weight="600">本專案差異與重點</text>
+<text x="754" y="230" font-size="16">一般模組有四條支路後串接。</text>
+<text x="754" y="274" font-size="16">兩個 Aux 分別接 4a 與 4d。</text>
+<text x="754" y="318" font-size="16">訓練 Aux loss 權重各為 0.3。</text>
+<text x="754" y="362" font-size="16">原版 Aux 推論時捨棄。</text>
+<text x="754" y="406" font-size="16">本專案省略前段兩個 LRN。</text>
+<text x="754" y="450" font-size="16">輸入160、六類；Aux 可開關。</text>
+<text x="36" y="1038" font-size="15" fill="#68686f">僅整理主要階段；分支／捷徑以文字標示。完整連接、超參數與細節請查來源。</text>
+<text x="36" y="1063" font-size="14" fill="#68686f">原始任務的輸入／分類數與本專案不同；本圖不是本專案權重的逐層摘要。</text>
+</g></svg>

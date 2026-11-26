@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="982" viewBox="0 0 1120 982" role="img" aria-labelledby="title desc">
+<title id="title">ResNet-50 · Bottleneck 參考架構</title>
+<desc id="desc">依論文或官方參考重繪的階段概覽；右側列本專案差異。非完整逐算子計算圖。</desc>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#0071e3"/></marker></defs>
+<rect width="1120" height="982" rx="24" fill="#f5f5f7"/>
+<g font-family="-apple-system,BlinkMacSystemFont,PingFang TC,Microsoft JhengHei,sans-serif" fill="#1d1d1f">
+<text x="36" y="52" font-size="29" font-weight="600">ResNet-50 · Bottleneck</text>
+<text x="36" y="86" font-size="16" fill="#68686f">He et al. (2015) · Table 1 / Figure 5</text>
+<text x="36" y="117" font-size="16" fill="#68686f">參考架構階段概覽 · 左側依來源重繪；右側為本專案調整</text>
+<rect x="36" y="150" width="670" height="78" rx="16" fill="#edf5ff" stroke="#d7dce2"/>
+<text x="371" y="181" text-anchor="middle" font-size="21" font-weight="500">輸入 224×224 RGB</text>
+<text x="371" y="208" text-anchor="middle" font-size="16" fill="#68686f">Conv 7×7 / 64 · s2 → MaxPool 3×3 / s2</text>
+<path d="M371 228 V247" stroke="#0071e3" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="36" y="251" width="670" height="78" rx="16" fill="#fff" stroke="#d7dce2"/>
+<text x="371" y="282" text-anchor="middle" font-size="21" font-weight="500">conv2_x · Bottleneck ×3</text>
+<text x="371" y="309" text-anchor="middle" font-size="16" fill="#68686f">[1×1,64 → 3×3,64 → 1×1,256]</text>
+<path d="M371 329 V348" stroke="#0071e3" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="36" y="352" width="670" height="78" rx="16" fill="#fff" stroke="#d7dce2"/>
+<text x="371" y="383" text-anchor="middle" font-size="21" font-weight="500">conv3_x · Bottleneck ×4</text>
+<text x="371" y="410" text-anchor="middle" font-size="16" fill="#68686f">[1×1,128 → 3×3,128 → 1×1,512]</text>
+<path d="M371 430 V449" stroke="#0071e3" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="36" y="453" width="670" height="78" rx="16" fill="#fff" stroke="#d7dce2"/>
+<text x="371" y="484" text-anchor="middle" font-size="21" font-weight="500">conv4_x · Bottleneck ×6</text>
+<text x="371" y="511" text-anchor="middle" font-size="16" fill="#68686f">[1×1,256 → 3×3,256 → 1×1,1024]</text>
+<path d="M371 531 V550" stroke="#0071e3" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="36" y="554" width="670" height="78" rx="16" fill="#fff" stroke="#d7dce2"/>
+<text x="371" y="585" text-anchor="middle" font-size="21" font-weight="500">conv5_x · Bottleneck ×3</text>
+<text x="371" y="612" text-anchor="middle" font-size="16" fill="#68686f">[1×1,512 → 3×3,512 → 1×1,2048]</text>
+<path d="M371 632 V651" stroke="#0071e3" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="36" y="655" width="670" height="78" rx="16" fill="#fff" stroke="#d7dce2"/>
+<text x="371" y="686" text-anchor="middle" font-size="21" font-weight="500">每個 block：支路＋shortcut → ReLU</text>
+<text x="371" y="713" text-anchor="middle" font-size="16" fill="#68686f">維度增加時使用投影捷徑；Conv 後接 BN</text>
+<path d="M371 733 V752" stroke="#0071e3" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="36" y="756" width="670" height="78" rx="16" fill="#edf5ff" stroke="#d7dce2"/>
+<text x="371" y="787" text-anchor="middle" font-size="21" font-weight="500">Global Average Pool</text>
+<text x="371" y="814" text-anchor="middle" font-size="16" fill="#68686f">FC 1000 → Softmax</text>
+<rect x="732" y="150" width="352" height="324" rx="18" fill="#fff" stroke="#d7dce2"/>
+<text x="754" y="189" font-size="22" font-weight="600">本專案差異與重點</text>
+<text x="754" y="230" font-size="16">本專案保留 3／4／6／3 區塊。</text>
+<text x="754" y="274" font-size="16">輸入160，分類改為六類。</text>
+<text x="754" y="318" font-size="16">TensorFlow same 與固定補邊的</text>
+<text x="754" y="362" font-size="16">邊界取樣不保證逐點相同。</text>
+<text x="754" y="406" font-size="16">不是訓練環境或權重的重現。</text>
+<text x="36" y="937" font-size="15" fill="#68686f">僅整理主要階段；分支／捷徑以文字標示。完整連接、超參數與細節請查來源。</text>
+<text x="36" y="962" font-size="14" fill="#68686f">原始任務的輸入／分類數與本專案不同；本圖不是本專案權重的逐層摘要。</text>
+</g></svg>
