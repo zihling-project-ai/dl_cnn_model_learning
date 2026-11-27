@@ -2,6 +2,9 @@
 (() => {
   const root = document.getElementById('cnn-lab-preview-v2');
   const $ = id => document.getElementById(id);
+  const showcaseOnly = root.dataset.mode === 'showcase';
+  const visibleRuns = () => (state?.runs || []).filter(item => (item.source || 'local') === $('cl-source').value);
+  const trainingDisabled = () => !showcaseOnly && (!state?.local_ready || !!active());
   ['cl-start','cl-evaluate','cl-confirm'].forEach(id => $(id).disabled = true);
   const labels = {cat:'貓', dog:'狗', fox:'狐狸', leopard:'豹', lion:'獅子', wolf:'狼'};
   let reviewed = null, selectionDriven = false;
@@ -28,6 +31,12 @@
 
   function alert(message) { $('cl-alert').textContent = message || ''; $('cl-alert').hidden = !message; }
   async function api(path, data) {
+    if (showcaseOnly) {
+      if(path !== '/api/state' || data !== undefined) throw new Error('展示模式不執行訓練或讀取照片。');
+      const response = await fetch('results/showcase.json');
+      if(!response.ok)throw new Error('無法讀取展示結果');
+      return response.json();
+    }
     const options = data === undefined ? {} : {method:'POST', headers:{'Content-Type':'application/json','X-Lab-Token':state.token}, body:JSON.stringify(data)};
     const response = await fetch(path, options);
     const result = await response.json();
@@ -39,16 +48,16 @@
   function selectTab(tab) {
     const buttons = [...root.querySelectorAll('[role=tab]')];
     buttons.forEach(button => { button.setAttribute('aria-selected', String(button === tab)); $(button.getAttribute('aria-controls')).hidden = button !== tab; });
-    $('cl-original-stats').hidden = ['cl-tab-class','cl-tab-models'].includes(tab.id);
-    root.querySelector('.lab-result-head .lab-eyebrow').textContent = tab.id === 'cl-tab-models' ? '模型原理 · 架構與論文差異' : '本機實測紀錄 · 驗證集結果';
-    root.querySelector('.lab-result-head h2').textContent = tab.id === 'cl-tab-models' ? '理解每個模型的設計' : tab.id === 'cl-tab-class' ? '看懂每一類的判斷' : '看見模型如何學習';
+    $('cl-original-stats').hidden = ['cl-tab-class','cl-tab-models','cl-tab-optimizers'].includes(tab.id);
+    root.querySelector('.lab-result-head .lab-eyebrow').textContent = tab.id === 'cl-tab-optimizers' ? '學習原理 · 從梯度到權重更新' : tab.id === 'cl-tab-models' ? '模型原理 · 架構與論文差異' : '本機實測紀錄 · 驗證集結果';
+    root.querySelector('.lab-result-head h2').textContent = tab.id === 'cl-tab-optimizers' ? '看懂優化器怎麼更新權重' : tab.id === 'cl-tab-models' ? '理解每個模型的設計' : tab.id === 'cl-tab-class' ? '看懂每一類的判斷' : '看見模型如何學習';
     requestAnimationFrame(drawChart);
   }
   function refreshRunPicker() {
     const picker = $('cl-run');
     const wanted = runId;
     picker.replaceChildren();
-    for (const item of state.runs) {
+    for (const item of visibleRuns()) {
       const option = document.createElement('option');
       option.value = item.id;
       option.textContent = `${state.models[item.model] || item.model} · ${item.training.epochs} 輪 · LR ${item.training.learning_rate} · ${item.training.optimizer} · ${item.status} · ${item.id.slice(-6)}`;
@@ -56,8 +65,8 @@
       picker.append(option);
     }
     if(selectionDriven && !wanted){runId=null;picker.selectedIndex=-1;return;}
-    if (state.runs.some(item => item.id === wanted)) runId = wanted;
-    else runId = state.jobs.find(job => job.status === 'running')?.run_id || state.runs.filter(item => item.status === 'completed').sort((a,b) => (b.best?.[b.accuracy_key] || 0) - (a.best?.[a.accuracy_key] || 0))[0]?.id || state.runs.at(-1)?.id || null;
+    if (visibleRuns().some(item => item.id === wanted)) runId = wanted;
+    else runId = ($('cl-source').value==='local'?state.jobs.find(job => job.status === 'running')?.run_id:null) || visibleRuns().filter(item => item.status === 'completed').sort((a,b) => (b.best?.[b.accuracy_key] || 0) - (a.best?.[a.accuracy_key] || 0))[0]?.id || visibleRuns().at(-1)?.id || null;
     if (runId) picker.value = runId;
     if(!wanted && runId){const item=state.runs.find(r=>r.id===runId);$('cl-model').value=item.model;$('cl-lr').value=String(item.training.learning_rate);$('cl-optimizer').value=item.training.optimizer;}
   }
@@ -83,25 +92,31 @@
   }
   function renderResult() {
     const item = run(), busy = !!active();
-    $('cl-start').disabled = busy;
-    $('cl-confirm').disabled = busy;
+    $('cl-start').disabled = trainingDisabled();
+    $('cl-confirm').disabled = trainingDisabled();
     $('cl-evaluate').disabled = busy || !item?.can_evaluate;
     $('cl-best').textContent = item?.best ? `最佳 · 第 ${item.best.epoch} 輪` : '尚無完整輪次';
-    $('cl-accuracy').textContent = percent(item?.best?.[item?.accuracy_key]);
+    $('cl-accuracy').textContent = percent(epoch===10 ? (item?.evaluation?.accuracy ?? item?.best?.[item?.accuracy_key]) : item?.best?.[item?.accuracy_key]);
     $('cl-loss').textContent = decimal(item?.evaluation?.loss ?? item?.best?.val_loss);
     const oldStats = $('cl-original-stats').querySelectorAll('.lab-stat');
     oldStats[2].querySelector('.lab-value').textContent = percent(item?.evaluation?.report?.['macro avg']?.['f1-score']);
     oldStats[2].querySelector('.lab-stat-foot').textContent = item?.evaluation ? '最佳權重 · 驗證集' : epoch<10?'分類報告僅顯示於 10 輪節點':'尚未計算驗證分類指標';
-    $('cl-complete').textContent = item ? `${item.status === 'completed' ? '已完成' : '目前'} ${item.history.length} / ${item.training.epochs} 輪 · ${item.status === 'completed' ? '最佳權重已保存' : '尚未完成實驗'}` : '尚無實驗';
-    $('cl-duration').textContent = `本機 · ${duration(item?.elapsed_seconds)}`;
+    $('cl-complete').textContent = item ? `${item.status === 'completed' ? '已完成' : '目前'} ${item.history.length} / ${item.training.epochs} 輪 · ${item.status === 'completed' ? (item.source==='showcase'?'僅展示已保存數值，不含權重':'最佳權重已保存') : '尚未完成實驗'}` : '尚無實驗';
+    $('cl-duration').textContent = `${item?.source==='showcase'?'歷史耗時':'本機'} · ${duration(item?.elapsed_seconds)}`;
     $('cl-result-meta').textContent = item ? `${state.models[item.model]} · ${item.training.optimizer} · Batch ${item.training.batch_size} · LR ${item.training.learning_rate} · ${item.execution?.label || 'Mac CPU'}` : '尚未選擇實驗';
     $('cl-chart-label').textContent = `${metric === 'loss' ? 'Loss' : 'Accuracy'} 學習曲線`;
     $('cl-curve-note').textContent = (item?.history.length || 0) < 2 ? '資料不足兩輪，不能判定欠擬合或過擬合。' : '請觀察訓練與驗證的多輪趨勢，不以單輪波動判定過擬合。';
-    renderClassification();renderComparison();renderJob();drawChart();
+    renderClassification();renderComparison();renderJob();drawChart();renderSourceMode();
+  }
+  function renderSourceMode() {
+    $('cl-start').textContent=showcaseOnly?'用這組設定在本機訓練':'用這組設定從零訓練';
+    root.querySelector('.lab-tag').textContent=showcaseOnly?'實驗結果展示 · 不需要權重':'本機模式 · 新權重存在這台電腦';
+    $('cl-mode-note').textContent=showcaseOnly?'可以篩選曲線與指標；訓練請先在自己的電腦啟動 CNN Lab。':state.local_ready?'可查看展示結果或自己的實驗。確認訓練後，使用這台電腦的運算資源。':'展示可用；本機訓練尚缺設定或分類圖片，請先依啟動說明備齊。';
+    $('cl-snapshot-note').textContent=state.snapshot?`展示快照：${state.snapshot.completed_runs} / ${state.snapshot.planned_runs} 組完成。非最終排名；耗時可能包含休眠／暫停。`:'';
   }
   function renderComparison() {
     const body = $('cl-compare-body');body.replaceChildren();
-    const comparisons = state.runs.filter(item =>
+    const comparisons = visibleRuns().filter(item =>
       item.status === 'completed' && item.training.epochs === 10 && item.history.length === 10 &&
       ($('cl-filter-model').value === 'all' || item.model === $('cl-filter-model').value) &&
       ($('cl-filter-opt').value === 'all' || item.training.optimizer === $('cl-filter-opt').value) &&
@@ -109,7 +124,7 @@
     );
     for (const item of comparisons) {
       const tr = document.createElement('tr');
-      const values = [state.models[item.model] || item.model, `${item.history.length}/${item.training.epochs}`, item.training.batch_size, item.training.learning_rate, item.training.optimizer, percent(item.best?.[item.accuracy_key]), decimal(item.evaluation?.loss ?? item.best?.val_loss), percent(item.evaluation?.report?.['macro avg']?.['f1-score']), duration(item.elapsed_seconds), item.execution?.label || 'Mac CPU', item.status];
+      const values = [state.models[item.model] || item.model, `${item.history.length}/${item.training.epochs}`, item.training.batch_size, item.training.learning_rate, item.training.optimizer, percent(item.evaluation?.accuracy ?? item.best?.[item.accuracy_key]), decimal(item.evaluation?.loss ?? item.best?.val_loss), percent(item.evaluation?.report?.['macro avg']?.['f1-score']), duration(item.elapsed_seconds), item.execution?.label || 'Mac CPU', item.status];
       values.forEach(value => {const td=document.createElement('td');td.textContent=value;tr.append(td);});
       tr.title = item.message || `基準版本 ${item.protocol_id || '舊實驗'}`;
       body.append(tr);
@@ -120,7 +135,7 @@
     const names = result ? Object.entries(result.class_indices).sort((a,b)=>a[1]-b[1]).map(x=>x[0]) : Object.keys(state.dataset.val || {}).sort();
     const report = result?.report;
     const support = names.map(name => report?.[name]?.support ?? state.dataset.val?.[name] ?? 0);
-    $('cl-class-provenance').textContent = result ? `驗證集實測 · ${new Date(result.evaluated_at*1000).toLocaleString()}` : '驗證集分類指標尚未計算';
+    $('cl-class-provenance').textContent = result ? (result.evaluated_at ? `驗證集實測 · ${new Date(result.evaluated_at*1000).toLocaleString()}` : '已保存的驗證報告 · 非測試集成績') : '驗證集分類指標尚未計算';
     $('cl-class-banner').textContent = result ? '此處為所選實驗最佳權重的實際驗證結果。百分比按真實類別的每列張數正規化。' : '每組訓練完成後，會使用該組最佳權重計算驗證指標；空值不代表 0。';
     $('cl-class-accuracy').textContent = percent(result?.accuracy);
     $('cl-class-macro').textContent = percent(report?.['macro avg']?.['f1-score']);
@@ -133,7 +148,7 @@
     for(const name of names){const tr=document.createElement('tr'),row=report?.[name];[displayName(name),percent(row?.precision),percent(row?.recall),percent(row?.['f1-score']),row?.support ?? state.dataset.val?.[name] ?? 0].forEach(value=>{const td=document.createElement('td');td.textContent=value;tr.append(td);});table.append(tr);}
     const foot=$('cl-scores-foot');foot.replaceChildren();for(const key of ['macro avg','weighted avg']){const tr=document.createElement('tr'),row=report?.[key];[key==='macro avg'?'Macro avg':'Weighted avg',percent(row?.precision),percent(row?.recall),percent(row?.['f1-score']),row?.support ?? support.reduce((a,b)=>a+b,0)].forEach(value=>{const td=document.createElement('td');td.textContent=value;tr.append(td);});foot.append(tr);}
     $('cl-errors').hidden=true;$('cl-errors').replaceChildren();$('cl-image-note').textContent='';
-    if(result && chosenCell){const [i,j]=chosenCell,value=result.confusion_matrix[i][j];$('cl-cell-title').textContent=`${displayName(names[i])} → ${displayName(names[j])} · ${i===j?'正確分類':'誤判'}`;$('cl-cell-detail').textContent=`${value} 張，占真正${displayName(names[i])}的 ${percent(support[i]?value/support[i]:0)}。`;$('cl-error-images').disabled=i===j||value===0;}else{$('cl-cell-title').textContent='選擇一格，查看模型的判斷';$('cl-cell-detail').textContent=result?'非對角線格子可查看被認錯的照片。':'尚未載入實際預測結果。';$('cl-error-images').disabled=true;}
+    if(result && chosenCell){const [i,j]=chosenCell,value=result.confusion_matrix[i][j];$('cl-cell-title').textContent=`${displayName(names[i])} → ${displayName(names[j])} · ${i===j?'正確分類':'誤判'}`;$('cl-cell-detail').textContent=`${value} 張，占真正${displayName(names[i])}的 ${percent(support[i]?value/support[i]:0)}。`;$('cl-error-images').disabled=showcaseOnly||item?.source==='showcase'||i===j||value===0;}else{$('cl-cell-title').textContent='選擇一格，查看模型的判斷';$('cl-cell-detail').textContent=result?(showcaseOnly||item?.source==='showcase'?'展示只提供數值，不包含原始照片。':'非對角線格子可查看被認錯的照片。'):'尚未載入實際預測結果。';$('cl-error-images').disabled=true;}
     $('cl-eval-note').textContent = result ? `已核對設定與類別順序 · Loss ${decimal(result.loss)} · Top3 ${percent(result.top3_accuracy)}` : '評估只使用驗證集，不讀取測試集。';
   }
   function drawChart() {
@@ -162,7 +177,7 @@
   }
   async function poll() {
     if(polling)return;polling=true;
-    try { const next=await api('/api/state');if($('cl-alert').textContent.startsWith('無法連線到本機介面：'))alert('');const first=!state;const snapshot=JSON.stringify(next.runs.map(item=>({...item,elapsed_seconds:undefined})));state=next;if(first){$('cl-model').replaceChildren();Object.entries(state.models).forEach(([value,label])=>{const option=document.createElement('option');option.value=value;option.textContent=label;$('cl-model').append(option);});Object.entries(state.models).forEach(([value,label])=>{const option=document.createElement('option');option.value=value;option.textContent=label;$('cl-filter-model').append(option);});$('cl-model').value='efficientnet_b0';configureMode();}if(first||snapshot!==runSnapshot){runSnapshot=snapshot;refreshRunPicker();renderResult();}else{const busy=!!active();$('cl-start').disabled=busy;$('cl-confirm').disabled=busy;$('cl-evaluate').disabled=busy||!run()?.can_evaluate;renderJob();} }
+    try { const next=await api('/api/state');if($('cl-alert').textContent.startsWith('無法連線到本機介面：'))alert('');const first=!state;const snapshot=JSON.stringify(next.runs.map(item=>({...item,elapsed_seconds:undefined})));state=next;if(first){$('cl-source').value=next.runs.some(item=>item.source==='showcase')?'showcase':'local';if(showcaseOnly)$('cl-source').querySelector('option[value=local]').disabled=true;$('cl-model').replaceChildren();Object.entries(state.models).forEach(([value,label])=>{const option=document.createElement('option');option.value=value;option.textContent=label;$('cl-model').append(option);});Object.entries(state.models).forEach(([value,label])=>{const option=document.createElement('option');option.value=value;option.textContent=label;$('cl-filter-model').append(option);});$('cl-model').value='efficientnet_b0';configureMode();}if(first||snapshot!==runSnapshot){runSnapshot=snapshot;refreshRunPicker();renderResult();}else{const busy=!!active();$('cl-start').disabled=trainingDisabled();$('cl-confirm').disabled=trainingDisabled();$('cl-evaluate').disabled=busy||!run()?.can_evaluate;renderJob();} }
     catch(error){alert('無法連線到本機介面：'+error.message);}finally{polling=false;}
   }
   root.querySelectorAll('[data-choice]').forEach(group=>group.addEventListener('click',event=>{const button=event.target.closest('button');if(!button)return;group.querySelectorAll('button').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));if(group.dataset.choice==='epoch')epoch=Number(button.dataset.value);else if(group.dataset.choice==='batch')batch=Number(button.dataset.value);else metric=button.dataset.value;draft();if(group.dataset.choice==='epoch')selectMatchingRun();if(group.dataset.choice==='metric')renderResult();else drawChart();}));
@@ -174,7 +189,7 @@
     if(!state)return;
     selectionDriven=true;
     const p=params();
-    const matches=state.runs.filter(item=>item.model===p.model && item.training.optimizer===p.optimizer && item.training.learning_rate===p.learning_rate && item.training.batch_size===32 && item.training.epochs>=epoch);
+    const matches=visibleRuns().filter(item=>item.model===p.model && item.training.optimizer===p.optimizer && item.training.learning_rate===p.learning_rate && item.training.batch_size===32 && item.training.epochs>=epoch);
     matches.sort((a,b)=>(b.training.epochs===10)-(a.training.epochs===10) || b.history.length-a.history.length);
     runId=matches[0]?.id || null;
     if(runId)$('cl-run').value=runId;
@@ -194,12 +209,13 @@
     reviewed=null;$('cl-review').hidden=true;draft();
     $('cl-draft-status').textContent=mode==='grid'?'全部模型 × 3 種學習率 × 4 種優化器，共 120 組；每組訓練 10 輪，保存 1／5／10 節點。':mode==='comparison'?'固定 10 輪，符合相同基準的已完成實驗直接沿用。':'沒有權重也能從零訓練；需先準備環境與分類圖片。';
   }
+  $('cl-source').addEventListener('change',()=>{runId=null;selectionDriven=false;chosenCell=null;refreshRunPicker();renderResult();});
   $('cl-mode').addEventListener('change',configureMode);
   for(const id of ['cl-filter-model','cl-filter-opt','cl-filter-lr'])$(id).addEventListener('change',renderComparison);
 
   const tabs=[...root.querySelectorAll('[role=tab]')];tabs.forEach((tab,index)=>{tab.addEventListener('click',()=>selectTab(tab));tab.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?tabs.length-1:(index+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;selectTab(tabs[next]);tabs[next].focus();});});
   $('cl-run').addEventListener('change',()=>{runId=$('cl-run').value;const item=state.runs.find(r=>r.id===runId);if(item){$('cl-model').value=item.model;$('cl-lr').value=String(item.training.learning_rate);$('cl-optimizer').value=item.training.optimizer;}chosenCell=null;renderResult();});
-  $('cl-start').addEventListener('click',()=>{const p=params();reviewed={path:$('cl-mode').value==='grid'?'/api/grid':$('cl-mode').value==='comparison'?'/api/comparison':'/api/train',values:p};$('cl-review-values').textContent=`${state.models[p.model] || '全部模型'} · 10 Epoch（保存 1／5／10 節點） · Batch ${p.batch_size} · LR ${p.learning_rate} · ${p.optimizer} · ${$('cl-mode').value==='grid' ? (p.model==='all'?10:1)*(p.learning_rate==='all'?3:1)*(p.optimizer==='all'?4:1) : (p.model==='all'?10:1)*(p.learning_rate==='all'?3:1)*(p.optimizer==='all'?4:1)} 組`;$('cl-review').hidden=false;$('cl-review').scrollIntoView({block:'nearest',behavior:'smooth'});});
+  $('cl-start').addEventListener('click',()=>{if(showcaseOnly){const selected=params();$('cl-guide-settings').textContent=`目前設定：${state.models[selected.model] || '全部模型'} · 10 輪 · Batch 32 · LR ${selected.learning_rate} · ${selected.optimizer}。啟動本機後可選同樣參數；這個頁面不會自動連線或開始訓練。`;$('cl-local-guide').hidden=false;$('cl-local-guide').scrollIntoView({block:'nearest',behavior:'smooth'});return;}const p=params();reviewed={path:$('cl-mode').value==='grid'?'/api/grid':$('cl-mode').value==='comparison'?'/api/comparison':'/api/train',values:p};$('cl-review-values').textContent=`${state.models[p.model] || '全部模型'} · 10 Epoch（保存 1／5／10 節點） · Batch ${p.batch_size} · LR ${p.learning_rate} · ${p.optimizer} · ${$('cl-mode').value==='grid' ? (p.model==='all'?10:1)*(p.learning_rate==='all'?3:1)*(p.optimizer==='all'?4:1) : (p.model==='all'?10:1)*(p.learning_rate==='all'?3:1)*(p.optimizer==='all'?4:1)} 組`;$('cl-review').hidden=false;$('cl-review').scrollIntoView({block:'nearest',behavior:'smooth'});});
   $('cl-close-review').addEventListener('click',()=>{$('cl-review').hidden=true;$('cl-start').focus();});
   $('cl-confirm').addEventListener('click',async()=>{try{$('cl-confirm').disabled=true;alert('');if(!reviewed)return;const job=await api(reviewed.path,reviewed.values);watchedJob=job.id;if(job.id)runId=job.id;$('cl-review').hidden=true;alert(`已排入 ${job.count} 組；沿用 ${job.reused?.length || 0} 組既有結果。`);await poll();}catch(error){alert(error.message);}finally{$('cl-confirm').disabled=!!active();}});
   $('cl-evaluate').addEventListener('click',async()=>{try{$('cl-evaluate').disabled=true;alert('');const job=await api('/api/validate',{run_id:runId});watchedJob=job.id;await poll();}catch(error){alert(error.message);$('cl-evaluate').disabled=!!active();}});
@@ -208,6 +224,6 @@
   $('cl-error-images').addEventListener('click',async()=>{try{const [truth,pred]=chosenCell;const rows=await api(`/api/errors?run=${encodeURIComponent(runId)}&true=${truth}&pred=${pred}`);const grid=$('cl-errors');grid.replaceChildren();grid.hidden=false;rows.forEach(row=>{const figure=document.createElement('figure'),image=document.createElement('img'),caption=document.createElement('figcaption');image.src=`/api/image?run=${encodeURIComponent(runId)}&index=${row.index}`;image.alt=`真實與預測不一致的驗證照片：${row.filename}`;image.loading='lazy';caption.textContent=`${row.filename} · 預測分數 ${percent(row.confidence)}`;figure.append(image,caption);grid.append(figure);});$('cl-image-note').textContent=`顯示此格前 ${rows.length} 張；預測分數不是校準後的正確機率。`;grid.scrollIntoView({block:'nearest',behavior:'smooth'});}catch(error){alert(error.message);}});
   // 比較表可同時容納不同模型與新增的分類指標。
   const header=$('cl-panel-compare').querySelector('thead tr');header.replaceChildren();['模型','輪數','Batch','LR','Optimizer','驗證 Acc.','驗證 Loss','Macro F1','耗時','執行環境','狀態'].forEach(text=>{const th=document.createElement('th');th.textContent=text;header.append(th);});
-  selectTab($(location.hash === '#models' ? 'cl-tab-models' : 'cl-tab-curves'));draft();poll();setInterval(poll,3000);
+  selectTab($(location.hash === '#optimizers' ? 'cl-tab-optimizers' : location.hash === '#models' ? 'cl-tab-models' : 'cl-tab-curves'));draft();poll();if(!showcaseOnly)setInterval(poll,3000);
   if(globalThis.ResizeObserver)new ResizeObserver(()=>requestAnimationFrame(drawChart)).observe(root.querySelector('[data-viz-container]'));
 })();

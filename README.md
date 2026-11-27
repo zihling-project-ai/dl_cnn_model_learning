@@ -4,7 +4,7 @@
 
 用六類動物影像實作經典 CNN，透過互動介面比較模型、學習率與優化器，練習解讀曲線和分類指標。模型保留各自核心特色，部分結構依學習任務簡化。
 
-目前為分階段整理版本：環境依賴與介面設定檔仍待補齊，Docker 尚待實測；以下是環境備妥後的訓練流程。專案不提供訓練照片與權重，請使用自己有權使用的圖片；展示數值可另外瀏覽。
+提供環境清單與設定範例，安裝步驟見 [環境安裝與驗證](docs/setup.md)。本機後端目前以 macOS 為驗證平台，Docker 尚待實測。專案不提供訓練照片與權重，請使用自己有權使用的圖片；展示數值可另外瀏覽。
 
 ## 二、CNN 基礎名詞介紹
 
@@ -117,6 +117,8 @@ Sigmoid 的輸出介於 0 與 1，不能用 SE 權重 2.0 來說明這份程式�
 
 EfficientNet 的殘差支路使用逐樣本遮罩：每張圖片只有一個保留或丟棄的值，廣播到整個 H×W×C 特徵圖，保留時依存活率縮放，推論時關閉隨機丟棄。它只把已算出的支路輸出設為零，不會跳過前面的卷積計算。
 
+優化器決定如何更新權重：見 [優化器學習筆記：SGD、RMSprop、Adam、AdamW](docs/optimizers.md)，或 CNN Lab 的「優化器教學」頁籤。
+
 ## 三、本次模型
 
 LeNet、AlexNet、AlexNet＋LRN、VGG16、VGG16＋BN、GoogLeNet、Inception v2、ResNet50、MobileNet v1、EfficientNet-B0。
@@ -129,7 +131,7 @@ LeNet、AlexNet、AlexNet＋LRN、VGG16、VGG16＋BN、GoogLeNet、Inception v2�
 
 固定資料切分、160×160 RGB、Batch 32 與 Seed 42；每模型比較三種學習率與四種優化器，每組訓練 10 輪。使用最佳驗證權重觀察 Loss、Accuracy、F1、Recall 與混淆矩陣，測試集留到最後。
 
-實驗結果展示網站整理中，預計提供不含權重的互動數值；本機模式另提供從零訓練。
+[實驗結果展示首頁](index.html) 提供不含權重的互動數值；請使用靜態伺服器開啟，操作方式見 [環境安裝與驗證](docs/setup.md)。本機模式另提供從零訓練。
 
 詳見 [實驗方法與目前限制](docs/experiment-method.md) · [本機網站說明](webs/README.md)。介面提供訓練設定、曲線、分類表現與實驗比較；目前沒有公開部署網站。
 
@@ -151,7 +153,7 @@ LeNet、AlexNet、AlexNet＋LRN、VGG16、VGG16＋BN、GoogLeNet、Inception v2�
 
 `main_train.py` 依七段讀取設定、建立模型、準備照片、compile、準備 callbacks、fit、載回最佳權重。只有真正執行到 fit 才開始訓練。
 
-第五節的 `config_user.yaml` 範例使用六類、160×160、batch 32、10 epochs、Adam、學習率 0.0001；其他實驗設定檔可以使用不同數值。範例值不代表已經適合資料，應以各次實驗保存的設定為準。未指定 `--config` 時，程式會讀取根目錄的 `config.yaml`；目前發布版本尚未附上此檔案。訓練增強包含旋轉、平移、縮放、形變與設定中的翻轉，未加入亮度增強或重新抽樣。
+第五節的 `config_user.yaml` 範例使用六類、160×160、batch 32、10 epochs、Adam、學習率 0.0001；其他實驗設定檔可以使用不同數值。範例值不代表已經適合資料，應以各次實驗保存的設定為準。未指定 `--config` 時，程式會讀取根目錄的 `config.yaml`；專案已附上可修改的範例。訓練增強包含旋轉、平移、縮放、形變與設定中的翻轉，未加入亮度增強或重新抽樣。
 
 `main_test.py` 不訓練，使用相同批次的圖片與答案計算 Accuracy、Top3、Precision、Recall、F1 與混淆矩陣。驗證集和測試集是不同資料，不能把 validation accuracy 直接當 test accuracy。
 
@@ -167,11 +169,13 @@ LeNet、AlexNet、AlexNet＋LRN、VGG16、VGG16＋BN、GoogLeNet、Inception v2�
 
 | 檔案／資料夾 | 分工 |
 |---|---|
+| [requirements.txt](requirements.txt)、[config.yaml](config.yaml)、[config_lab.yaml](config_lab.yaml) | 環境依賴與命令列／網頁設定範例。 |
+| [index.html](index.html)、[results/](results/) | 不含權重的展示首頁與匿名數值快照。 |
 | [main_train.py](main_train.py) | 訓練入口，讀設定、建立模型、保存最佳權重與紀錄。 |
 | [main_test.py](main_test.py) | 評估入口，載入權重並計算分類指標。 |
 | [models/](models/) | 十種 CNN 實作與統一模型入口。 |
 | [tools/](tools/) | 資料、標記、設定與網站後端工具。 |
-| [tests/](tests/) | 資料安全、架構及介面流程檢查；完整執行仍需補齊環境與設定。 |
+| [tests/](tests/) | 資料安全、架構及介面流程檢查；完整測試需安裝選用的標記工具依賴。 |
 | [webs/](webs/) | CNN Lab 前端與操作說明。 |
 | [docs/](docs/) | 模型圖解、架構差異、實驗方法與截圖。 |
 | [data_animal_pictures/](data_animal_pictures/) | 目前只有匿名資料統計，沒有照片。 |
@@ -257,4 +261,4 @@ python main_train.py --config config_user.yaml
 python main_test.py --config config_user.yaml --weights "weights/my_experiment/實際權重檔名.h5"
 ```
 
-若希望用網頁選參數、看進度與分類指標，請使用 [CNN Lab 本機模式](webs/README.md)。介面另需 `config_lab.yaml` 與完整環境；上述命令列設定不會自動變成介面設定，命令列訓練也不會自動產生 Lab 工作紀錄。**目前網頁訓練流程以六類動物為範圍**；若改成其他分類任務，需另外調整類別數與介面。
+若希望用網頁選參數、看進度與分類指標，請使用 [CNN Lab 本機模式](webs/README.md)。介面使用已附上的 `config_lab.yaml`，仍需安裝環境與準備照片；上述命令列設定不會自動變成介面設定，命令列訓練也不會自動產生 Lab 工作紀錄。**目前網頁訓練流程以六類動物為範圍**；若改成其他分類任務，需另外調整類別數與介面。

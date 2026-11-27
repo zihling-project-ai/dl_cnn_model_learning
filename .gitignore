@@ -1,0 +1,27 @@
+# Python 與本機環境
+__pycache__/
+*.py[cod]
+.venv*/
+venv/
+.env
+.env.*
+!.env.example
+.DS_Store
+._*
+.idea/
+.vscode/
+.pytest_cache/
+# 圖片資料只發布匿名統計，不發布照片或逐圖清單。
+/data_animal_pictures/*
+!/data_animal_pictures/summary.json
+# 本機實驗、權重與暫存
+/logs/
+/weights/
+/docker-results/
+/archive/
+*.h5
+*.hdf5
+*.keras
+*.ckpt*
+/config_user.yaml
+/config_local*.yaml

@@ -221,7 +221,14 @@ class Lab:
         runs = self.runs()
         public_runs = [{key: value for key, value in run.items() if key not in {'weight_path', 'metadata'}} for run in runs]
         summary = read_json(self.root / 'data_animal_pictures/summary.json', {})
-        return {'token': self.token, 'models': MODELS, 'runs': public_runs,
+        showcase = read_json(self.root / 'results/showcase.json', {})
+        for run in public_runs:
+            run['source'] = 'local'
+        public_runs = showcase.get('runs', []) + public_runs
+        ready = (self.root / 'config_lab.yaml').is_file() and all(
+            (self.root / 'data_animal_pictures' / split).is_dir() for split in ['train','val'])
+        return {'local_ready': ready, 'snapshot': showcase.get('snapshot'),
+                'token': self.token, 'models': MODELS, 'runs': public_runs,
                 'jobs': self.jobs(), 'dataset': summary.get('counts', {}),
                 'device': 'Metal GPU（已驗證的後續訓練）' if read_json(self.root / 'logs/macos_metal_checks/runtime.json', {}).get('enabled') else 'CPU（目前本機環境）'}
 

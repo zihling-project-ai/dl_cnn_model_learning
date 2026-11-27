@@ -23,3 +23,14 @@ html{color-scheme:light dark}body{margin:0;padding:24px;background:light-dark(#f
 #cnn-lab-preview-v2 .lab-tabs{overflow-x:auto}
 #cnn-lab-preview-v2 .lab-tabs button{white-space:nowrap}
 @media(max-width:1100px){#cnn-lab-preview-v2 .lab-model-grid{grid-template-columns:1fr}}
+
+#cnn-lab-preview-v2 .lab-source-panel{margin:16px 24px;display:grid;gap:10px}#cnn-lab-preview-v2 .lab-source-panel select{max-width:360px}
+
+/* 優化器教學：沿用 Lab 簡潔卡片與藍色重點。 */
+#cnn-lab-preview-v2 .lab-optimizer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+#cnn-lab-preview-v2 .lab-optimizer-grid p,#cnn-lab-preview-v2 .lab-optimizer-intro p,#cl-panel-optimizers li{line-height:1.85}
+#cnn-lab-preview-v2 .lab-optimizer-example{background:#f0f6ff;border-radius:12px;padding:14px;color:#174b87}
+#cnn-lab-preview-v2 .lab-learning-flow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:22px 0}
+#cnn-lab-preview-v2 .lab-learning-flow span{padding:12px 16px;background:#f3f4f8;border-radius:12px}
+#cnn-lab-preview-v2 .lab-learning-flow b{color:#0877ed}
+@media(max-width:760px){#cnn-lab-preview-v2 .lab-optimizer-grid{grid-template-columns:1fr}}

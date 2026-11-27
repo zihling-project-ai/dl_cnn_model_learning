@@ -1,0 +1,29 @@
+# 命令列預設範例；請先準備照片，再執行 main_train.py。
+model:
+  name: lenet
+  num_classes: 6
+  input_size:
+  - 160
+  - 160
+  aux_logits: false
+training:
+  batch_size: 32
+  epochs: 10
+  seed: 42
+  learning_rate: 0.0001
+  optimizer: adam
+  weight_decay: 0.0
+  momentum: 0.9
+  early_stopping: false
+augmentation:
+  use_aug: true
+  rotate: 10
+  flip: true
+  color_jitter: false
+dataset:
+  train_dir: data_animal_pictures/train
+  val_dir: data_animal_pictures/val
+  test_dir: data_animal_pictures/test
+save:
+  checkpoint_dir: weights/my_experiment
+  log_dir: logs/my_experiment

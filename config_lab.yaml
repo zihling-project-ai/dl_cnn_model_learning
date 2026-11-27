@@ -1,0 +1,29 @@
+# Lab 基礎範例；模型與主要參數由介面覆寫。aux_logits 僅 GoogLeNet 使用。
+augmentation:
+  color_jitter: false
+  flip: true
+  rotate: 10
+  use_aug: true
+dataset:
+  test_dir: data_animal_pictures/test
+  train_dir: data_animal_pictures/train
+  val_dir: data_animal_pictures/val
+model:
+  aux_logits: true
+  input_size:
+  - 160
+  - 160
+  name: lenet
+  num_classes: 6
+save:
+  checkpoint_dir: weights/macos_ui
+  log_dir: logs/macos_ui
+training:
+  batch_size: 32
+  early_stopping: false
+  epochs: 10
+  learning_rate: 0.0001
+  momentum: 0.9
+  optimizer: adam
+  seed: 42
+  weight_decay: 0.0005

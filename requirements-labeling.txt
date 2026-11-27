@@ -1,0 +1,8 @@
+# 選用：輔助標記工具與完整測試所需。
+-r requirements.txt
+tensorflow-hub==0.15.0
+opencv-python==4.11.0.86
+tqdm==4.67.1
+
+# TF Hub 0.15 仍使用 pkg_resources。
+setuptools==70.3.0
