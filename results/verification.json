@@ -1,0 +1,205 @@
+{
+  "checked_on": "2026-11-27",
+  "scope": "Inception fixed-input training replay; nine-model CPU validation spotchecks; no test-set scoring",
+  "training_replays": [
+    {
+      "backend": "cpu",
+      "learning_rate": 0.0001,
+      "requested_batches": 64,
+      "completed_batches": 64,
+      "status": "finite_short_run",
+      "first_problem": null,
+      "nonfinite_weight_count": 0,
+      "metric_state": {
+        "loss": [
+          3404.884765625,
+          2048.0
+        ],
+        "accuracy": [
+          738.0,
+          2048.0
+        ],
+        "top3_acc": [
+          1455.0,
+          2048.0
+        ]
+      },
+      "prediction_finite": true
+    },
+    {
+      "backend": "cpu",
+      "learning_rate": 1e-05,
+      "requested_batches": 64,
+      "completed_batches": 64,
+      "status": "finite_short_run",
+      "first_problem": null,
+      "nonfinite_weight_count": 0,
+      "metric_state": {
+        "loss": [
+          3866.6826171875,
+          2048.0
+        ],
+        "accuracy": [
+          436.0,
+          2048.0
+        ],
+        "top3_acc": [
+          1175.0,
+          2048.0
+        ]
+      },
+      "prediction_finite": true
+    },
+    {
+      "backend": "gpu",
+      "learning_rate": 0.0001,
+      "requested_batches": 64,
+      "completed_batches": 31,
+      "status": "invalid_metrics",
+      "first_problem": {
+        "step": 31,
+        "loss": 1.7908998727798462,
+        "accuracy": -0.2692113220691681,
+        "top3_acc": 0.7026209831237793
+      },
+      "nonfinite_weight_count": 0,
+      "metric_state": {
+        "loss": [
+          1776.5726318359375,
+          992.0
+        ],
+        "accuracy": [
+          347.0,
+          992.0
+        ],
+        "top3_acc": [
+          697.0,
+          992.0
+        ]
+      },
+      "prediction_finite": true
+    },
+    {
+      "backend": "gpu",
+      "learning_rate": 1e-05,
+      "requested_batches": 64,
+      "completed_batches": 3,
+      "status": "invalid_metrics",
+      "first_problem": {
+        "step": 3,
+        "loss": 1.9439929723739624,
+        "accuracy": -0.346019446849823,
+        "top3_acc": 0.5208333134651184
+      },
+      "nonfinite_weight_count": 0,
+      "metric_state": {
+        "loss": [
+          186.62332153320312,
+          96.0
+        ],
+        "accuracy": [
+          22.0,
+          96.0
+        ],
+        "top3_acc": [
+          50.0,
+          96.0
+        ]
+      },
+      "prediction_finite": true
+    }
+  ],
+  "validation_spotchecks": [
+    {
+      "model": "alexnet",
+      "samples": 60,
+      "status": "spotcheck_pass",
+      "probabilities_valid": true,
+      "cpu_sample_accuracy": 0.6666666666666666,
+      "saved_sample_accuracy": 0.6666666666666666,
+      "same_prediction_count": 60
+    },
+    {
+      "model": "alexnet_lrn",
+      "samples": 60,
+      "status": "spotcheck_pass",
+      "probabilities_valid": true,
+      "cpu_sample_accuracy": 0.7333333333333333,
+      "saved_sample_accuracy": 0.7333333333333333,
+      "same_prediction_count": 60
+    },
+    {
+      "model": "efficientnet_b0",
+      "samples": 60,
+      "status": "spotcheck_pass",
+      "probabilities_valid": true,
+      "cpu_sample_accuracy": 0.6333333333333333,
+      "saved_sample_accuracy": 0.6333333333333333,
+      "same_prediction_count": 60
+    },
+    {
+      "model": "googlenet",
+      "samples": 60,
+      "status": "spotcheck_pass",
+      "probabilities_valid": true,
+      "cpu_sample_accuracy": 0.8666666666666667,
+      "saved_sample_accuracy": 0.8666666666666667,
+      "same_prediction_count": 60
+    },
+    {
+      "model": "lenet",
+      "samples": 60,
+      "status": "spotcheck_pass",
+      "probabilities_valid": true,
+      "cpu_sample_accuracy": 0.5166666666666667,
+      "saved_sample_accuracy": 0.5166666666666667,
+      "same_prediction_count": 60
+    },
+    {
+      "model": "mobilenet_v1",
+      "samples": 60,
+      "status": "spotcheck_pass",
+      "probabilities_valid": true,
+      "cpu_sample_accuracy": 0.45,
+      "saved_sample_accuracy": 0.45,
+      "same_prediction_count": 60
+    },
+    {
+      "model": "resnet50",
+      "samples": 60,
+      "status": "spotcheck_pass",
+      "probabilities_valid": true,
+      "cpu_sample_accuracy": 0.85,
+      "saved_sample_accuracy": 0.85,
+      "same_prediction_count": 60
+    },
+    {
+      "model": "vgg16",
+      "samples": 60,
+      "status": "spotcheck_pass",
+      "probabilities_valid": true,
+      "cpu_sample_accuracy": 0.55,
+      "saved_sample_accuracy": 0.55,
+      "same_prediction_count": 60
+    },
+    {
+      "model": "vgg16_bn",
+      "samples": 60,
+      "status": "spotcheck_pass",
+      "probabilities_valid": true,
+      "cpu_sample_accuracy": 0.5333333333333333,
+      "saved_sample_accuracy": 0.5333333333333333,
+      "same_prediction_count": 60
+    }
+  ],
+  "limitations": [
+    "64 batches are not ten epochs.",
+    "One checkpoint per non-Inception model, first ten validation images per class; not all settings or a random representative sample.",
+    "Root faulty operation not localized; no universal claim about Metal or CPU."
+  ],
+  "initial_weights_and_inputs_sha256": {
+    "initial.h5": "38df32b7edce97b88b8f752c67b3d8ed6e6f0c66b33c9feb56b2a0728d0095c7",
+    "train_batches.npy": "1073835962567a8f2730138b67f403d8e8a46e8d79bb67cb528cfb6cfde4a077",
+    "labels.npy": "eca2e10940a555afd0a8177df33c9c4ff591285ec0a5f32979c2deb0c8c0dfd8"
+  }
+}

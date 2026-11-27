@@ -129,6 +129,23 @@ LeNet、AlexNet、AlexNet＋LRN、VGG16、VGG16＋BN、GoogLeNet、Inception v2�
 
 ## 四、實驗方法
 
+### 實驗結果摘要：先確認數值可信，再比較模型
+
+> [!IMPORTANT]
+> **Inception 在本次 TensorFlow／Metal 環境出現可重現的數值異常，全部 Inception 結果暫不納入比較。** 程式完成、Loss 下降，並不代表結果已驗證正確。本作品保留失敗與空缺，公開對照方法及限制。
+
+| 目前結果 | 證據與限制 |
+|---|---|
+| 120 組原定設定，118 組完成十輪 | 完成不是正確性保證；兩組 Inception＋Adam 未完成 |
+| 展示保留九種模型、108 組紀錄 | Inception 的十組完成結果一併隔離；十二組狀態仍可查看 |
+| 同初始權重、同 64 批資料重播 | 兩個學習率 CPU 正常，Metal 出現負準確率；具體故障算子未定位 |
+| 九模型 CPU 驗證抽查 | 每模型一份權重、每類十張圖，540／540 次分類與原報告一致；不是完整驗證 |
+| 測試集與 Docker | 測試集尚未評分；NVIDIA Docker 僅提供待驗證設定 |
+
+**重點閱讀：[完整實驗結果與可信度報告](docs/experiment-results.md)** —— 包含問題原因推測、解決方案、硬體差異與提問 QA、結論及後續；匿名數值見 [驗證紀錄](results/verification.json)。
+
+### 比較條件與操作介面
+
 固定資料切分、160×160 RGB、Batch 32 與 Seed 42；每模型比較三種學習率與四種優化器，每組訓練 10 輪。使用最佳驗證權重觀察 Loss、Accuracy、F1、Recall 與混淆矩陣，測試集留到最後。
 
 [實驗結果展示首頁](index.html) 提供不含權重的互動數值；請使用靜態伺服器開啟，操作方式見 [環境安裝與驗證](docs/setup.md)。本機模式另提供從零訓練。
@@ -173,6 +190,7 @@ LeNet、AlexNet、AlexNet＋LRN、VGG16、VGG16＋BN、GoogLeNet、Inception v2�
 | [index.html](index.html)、[results/](results/) | 不含權重的展示首頁與匿名數值快照。 |
 | [main_train.py](main_train.py) | 訓練入口，讀設定、建立模型、保存最佳權重與紀錄。 |
 | [main_test.py](main_test.py) | 評估入口，載入權重並計算分類指標。 |
+| [Dockerfile](Dockerfile)、[compose.yaml](compose.yaml)、[docker/](docker/) | NVIDIA 容器設定與說明，尚待實機驗證。 |
 | [models/](models/) | 十種 CNN 實作與統一模型入口。 |
 | [tools/](tools/) | 資料、標記、設定與網站後端工具。 |
 | [tests/](tests/) | 資料安全、架構及介面流程檢查；完整測試需安裝選用的標記工具依賴。 |

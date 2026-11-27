@@ -36,7 +36,7 @@ python -m pip check
 
 - 輔助標記：`python -m pip install -r requirements-labeling.txt`。第一次實際使用標記工具會下載外部預訓練模型，已分類照片不需要此功能。
 - Apple Metal：`python -m pip install -r requirements-metal.txt`，只適用相容 Mac。可執行 `python -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"` 檢查裝置。這份安裝清單不代表所有模型 GPU 訓練均通過驗證；Lab 另有固定環境派工機制，新安裝不附個人 runtime 紀錄。優先以 CPU 完成啟動檢查，再驗證 GPU。
-- NVIDIA Docker：尚待實測，容器檔案尚未發布；不要將上述 Mac 外掛裝進 NVIDIA 容器。
+- NVIDIA Docker：尚待實測，已提供 [Docker 設定與說明](../docker/README.md)；不要將上述 Mac 外掛裝進 NVIDIA 容器。
 
 平台參考：[TensorFlow 安裝文件](https://www.tensorflow.org/install/pip)、[Apple Metal 外掛文件](https://developer.apple.com/metal/tensorflow-plugin/)。官方文件可能以新版為主，本專案仍使用上方固定版本。
 

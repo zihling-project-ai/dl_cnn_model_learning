@@ -1,0 +1,24 @@
+# 採允許清單：只有建置需要的程式會傳給 Docker。
+**
+!Dockerfile
+!main_train.py
+!main_test.py
+!config.yaml
+!config_lab.yaml
+!models/
+!models/*.py
+!tools/
+!tools/*.py
+!webs/
+!webs/**
+!docker/
+!docker/**
+**/__pycache__/
+**/*.pyc
+
+!docs/
+!docs/images/
+!docs/images/*.svg
+!results/
+!results/showcase.json
+!tools/imagenet_labels.json

@@ -1,0 +1,26 @@
+services:
+  cnn-lab:
+    build: .
+    platform: linux/amd64
+    # 只開給本機；用 8766 避開現有 Mac 訓練介面的 8765。
+    ports:
+      - "127.0.0.1:8766:8765"
+    volumes:
+      - type: bind
+        source: ./data_animal_pictures
+        target: /app/data_animal_pictures
+        read_only: true
+        bind:
+          create_host_path: false
+      - ./docker-results/logs:/app/logs
+      - ./docker-results/weights:/app/weights
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    # 不自動重啟，避免重開機後意外恢復訓練。
+    restart: "no"
+    init: true

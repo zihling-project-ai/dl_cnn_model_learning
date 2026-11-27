@@ -39,3 +39,5 @@ html{color-scheme:light dark}body{margin:0;padding:24px;background:light-dark(#f
 #cnn-lab-preview-v2 .lab-formula code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
 #cnn-lab-preview-v2 .lab-optimizer-grid{grid-template-columns:1fr}
 #cl-panel-optimizers details p,#cl-panel-optimizers li{line-height:1.85}
+
+#cnn-lab-preview-v2 .lab-evidence-note{margin:16px 24px;border-left:5px solid #b45309;background:#fffaf0}#cnn-lab-preview-v2 .lab-evidence-note h2{font-size:21px}#cnn-lab-preview-v2 .lab-evidence-note p{line-height:1.85}

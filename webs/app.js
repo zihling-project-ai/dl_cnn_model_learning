@@ -112,7 +112,10 @@
     $('cl-start').textContent=showcaseOnly?'用這組設定在本機訓練':'用這組設定從零訓練';
     root.querySelector('.lab-tag').textContent=showcaseOnly?'實驗結果展示 · 不需要權重':'本機模式 · 新權重存在這台電腦';
     $('cl-mode-note').textContent=showcaseOnly?'可以篩選曲線與指標；訓練請先在自己的電腦啟動 CNN Lab。':state.local_ready?'可查看展示結果或自己的實驗。確認訓練後，使用這台電腦的運算資源。':'展示可用；本機訓練尚缺設定或分類圖片，請先依啟動說明備齊。';
-    $('cl-snapshot-note').textContent=state.snapshot?`展示快照：${state.snapshot.completed_runs} / ${state.snapshot.planned_runs} 組完成。非最終排名；耗時可能包含休眠／暫停。`:'';
+    $('cl-snapshot-note').textContent=state.snapshot?`展示 ${state.snapshot.completed_runs} 組可比較紀錄；訓練完成 ${state.snapshot.training_completed_runs ?? state.snapshot.completed_runs}/${state.snapshot.planned_runs} 組，另有 ${state.snapshot.quarantined_completed_runs || 0} 組已完成 Inception 暫停採信。非最終排名；耗時不作速度排名。`:'';
+    const review=$('cl-review-cases');review.replaceChildren();
+    for(const item of state.snapshot?.review_cases || []){const tr=document.createElement('tr');[state.models[item.model],item.optimizer,item.learning_rate,{completed_under_review:'10 輪完成・暫停採信',failed:'失敗・未補滿',not_run:'尚未執行'}[item.status],item.reason].forEach(value=>{const td=document.createElement('td');td.textContent=value;tr.append(td);});review.append(tr);}
+
   }
   function renderComparison() {
     const body = $('cl-compare-body');body.replaceChildren();

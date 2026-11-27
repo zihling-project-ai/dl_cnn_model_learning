@@ -1,0 +1,8 @@
+# TensorFlow / Keras / CUDA 由基礎映像提供。
+# 這是待容器建置驗證的 Linux 相依組合，不宣稱已測過 NVIDIA 訓練。
+numpy==1.26.4
+PyYAML==6.0.3
+Pillow==10.4.0
+scipy==1.13.1
+scikit-learn==1.5.2
+h5py==3.11.0

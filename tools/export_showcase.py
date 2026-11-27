@@ -11,16 +11,63 @@ MODELS = {'lenet':'LeNet', 'alexnet':'AlexNet', 'alexnet_lrn':'AlexNet LRN',
           'inception':'Inception v2', 'resnet50':'ResNet50',
           'mobilenet_v1':'MobileNet v1', 'efficientnet_b0':'EfficientNet-B0'}
 LABELS = {'cat','dog','fox','leopard','lion','wolf'}
+QUARANTINED_MODELS = {'inception': '數值異常待查；暫不納入展示比較，原始紀錄保留。'}
+
+
+def valid_evaluation(result):
+    """檢查分類比例、張數與混淆矩陣是否一致，不把合理範圍當成全面正確保證。"""
+    try:
+        samples = result['samples']
+        matrix = result['confusion_matrix']
+        if type(samples) is not int or samples <= 0 or len(matrix) != 6 or any(len(row) != 6 for row in matrix):
+            return False
+        if any(type(v) is not int or v < 0 for row in matrix for v in row):
+            return False
+        if sum(map(sum, matrix)) != samples:
+            return False
+        if not math.isclose(sum(matrix[i][i] for i in range(6))/samples, result['accuracy'], abs_tol=1e-6):
+            return False
+        if not math.isfinite(result['loss']) or result['loss'] < 0:
+            return False
+        for key in ['accuracy', 'top3_accuracy']:
+            if key in result and (not math.isfinite(result[key]) or not 0 <= result[key] <= 1):
+                return False
+        for name, row in result['report'].items():
+            if name in LABELS | {'macro avg','weighted avg'} and isinstance(row, dict):
+                if any(not math.isfinite(row[k]) or not 0 <= row[k] <= 1 for k in ['precision','recall','f1-score']):
+                    return False
+                if not math.isfinite(row['support']) or row['support'] < 0:
+                    return False
+        return True
+    except (KeyError, TypeError, ValueError):
+        return False
 
 
 def export(source, output):
     """讀取完整十輪紀錄並輸出經欄位篩選的匿名展示數值。"""
     source, output = Path(source), Path(output)
     runs = []
+    job_files = sorted((source / 'logs/macos_ui').glob('*/job.json'))
+    jobs = [json.loads(path.read_text()) for path in job_files]
+    completed_cases = {(job.get('model'), job.get('settings', {}).get('learning_rate'), job.get('settings', {}).get('optimizer'))
+        for job in jobs if job.get('model') in MODELS and job.get('status') == 'completed' and job.get('epochs_completed') == 10}
+    review_cases = []
+    for optimizer in ['adam','sgd','adamw','rmsprop']:
+        for rate in [.00001,.0001,.001]:
+            matches = [job for job in jobs if job.get('model') == 'inception'
+                and job.get('settings', {}).get('optimizer') == optimizer
+                and job.get('settings', {}).get('learning_rate') == rate]
+            completed = any(job.get('status') == 'completed' and job.get('epochs_completed') == 10 for job in matches)
+            status = 'completed_under_review' if completed else 'failed' if any(job.get('status') == 'failed' for job in matches) else 'not_run'
+            review_cases.append({'model':'inception', 'optimizer':optimizer, 'learning_rate':rate,
+                'epochs':10, 'status':status, 'included_in_comparison':False,
+                'reason':QUARANTINED_MODELS['inception']})
     for job_path in sorted((source / 'logs/macos_ui').glob('*/job.json')):
         job = json.loads(job_path.read_text())
         model = job.get('model')
         if job.get('status') != 'completed' or job.get('epochs_completed') != 10 or model not in MODELS:
+            continue
+        if model in QUARANTINED_MODELS:
             continue
         folder = job_path.parent
         result_path = folder / 'validation.json'
@@ -37,9 +84,13 @@ def export(source, output):
             continue
         if not all(math.isfinite(value) for row in history for value in row.values()):
             continue
+        if any(('accuracy' in key or 'top3' in key) and not 0 <= value <= 1 for row in history for key, value in row.items()):
+            continue
         for row in history:
             row['epoch'] = int(row['epoch']) + 1
         result = json.loads(result_path.read_text())
+        if not valid_evaluation(result):
+            continue
         if set(result.get('class_indices', {})) != LABELS:
             continue
         settings = job['settings']
@@ -77,8 +128,11 @@ def export(source, output):
     data = {'schema_version':1, 'mode':'showcase', 'models':MODELS, 'runs':runs, 'jobs':[],
             'dataset':counts, 'device':'展示模式，不執行訓練',
             'snapshot':{'exported_at':datetime.now(timezone.utc).isoformat(), 'completed_runs':len(runs),
+                'training_completed_runs':len(completed_cases),
+                'quarantined_completed_runs':sum(case[0] in QUARANTINED_MODELS for case in completed_cases),
+                'review_cases':review_cases, 'quarantined_models':QUARANTINED_MODELS,
                 'planned_runs':120, 'final_results':False, 'weights_included':False,
-                'note':'進行中的驗證實驗快照，非最終測試成績；不含照片、權重或個別預測。'}}
+                'note':'驗證集探索快照；Inception 暫停採信且排除比較；抽查通過不代表全部結果已驗證。非最終測試成績，不含照片或權重。'}}
     text = json.dumps(data, ensure_ascii=False, indent=2, allow_nan=False)
     assert not any(marker in text for marker in ['/Users/', '/Volumes/', '.local', 'weight_path', 'dataset_dir', 'predictions', 'token'])
     output.parent.mkdir(parents=True, exist_ok=True)

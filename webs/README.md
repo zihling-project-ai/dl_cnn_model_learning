@@ -43,9 +43,9 @@ python -B -m tools.web_app
 
 ## NVIDIA：Docker（尚待實測）
 
-目標是 Linux 或 Windows WSL2＋相容 NVIDIA GPU。需相容驅動、Docker Compose 與容器 GPU 支援。**Windows／Linux NVIDIA 建置與完整訓練流程尚未實測**；Docker 檔案仍在本機準備稿，尚未加入本 repo。
+目標是 Linux 或 Windows WSL2＋相容 NVIDIA GPU。需相容驅動、Docker Compose 與容器 GPU 支援。**Windows／Linux NVIDIA 建置與完整訓練流程尚未實測**；本 repo 已提供 [Dockerfile／Compose 與操作說明](../docker/README.md)，但尚未在 NVIDIA 硬體建置或訓練驗證。
 
-待 Docker 包裝與相關設定完成審核上傳後，預定執行：
+在符合條件的 NVIDIA 環境準備照片後，預定執行（待實測）：
 
 ```sh
 docker compose up --build
@@ -65,3 +65,7 @@ Docker 預定以 `docker compose down` 停止。停止容器、關機或結束�
 ## 不啟動服務也能閱讀模型
 
 下載完整專案，直接用瀏覽器開啟 [docs/models.html](../docs/models.html)，保留旁邊的 `images/` 與 `webs/style.css`。這是模型介紹的離線入口，Windows、Mac、Linux 都不需要 Python 即可閱讀；訓練功能仍需服務與環境。
+
+## 實驗可信度
+
+展示保留九模型108組結果；Inception十二組設定留空並標為待查，不當作零分或最終排名。見 [實驗結果報告](../docs/experiment-results.md)。
