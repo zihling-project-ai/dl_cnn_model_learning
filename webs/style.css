@@ -34,3 +34,8 @@ html{color-scheme:light dark}body{margin:0;padding:24px;background:light-dark(#f
 #cnn-lab-preview-v2 .lab-learning-flow span{padding:12px 16px;background:#f3f4f8;border-radius:12px}
 #cnn-lab-preview-v2 .lab-learning-flow b{color:#0877ed}
 @media(max-width:760px){#cnn-lab-preview-v2 .lab-optimizer-grid{grid-template-columns:1fr}}
+
+#cnn-lab-preview-v2 .lab-formula{white-space:pre-wrap;overflow-wrap:anywhere;background:#f3f6fb;color:#173b66;padding:16px;border-radius:12px;font-size:14px;line-height:1.85;margin:16px 0}
+#cnn-lab-preview-v2 .lab-formula code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+#cnn-lab-preview-v2 .lab-optimizer-grid{grid-template-columns:1fr}
+#cl-panel-optimizers details p,#cl-panel-optimizers li{line-height:1.85}
